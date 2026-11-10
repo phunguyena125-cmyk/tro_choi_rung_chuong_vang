@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rung Chuông Vàng - Đặc Điểm Biến Dạng Của Lò Xo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Baloo 2 & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Baloo 2', 'cursive'],
+                    },
+                    colors: {
+                        team1: { light: '#bfdbfe', DEFAULT: '#2563eb', dark: '#1e40af' }, // Blue
+                        team2: { light: '#fef08a', DEFAULT: '#eab308', dark: '#ca8a04' }, // Yellow/Amber
+                        team3: { light: '#bbf7d0', DEFAULT: '#16a34a', dark: '#15803d' }, // Green
+                        team4: { light: '#fbcfe8', DEFAULT: '#d946ef', dark: '#a21caf' }, // Purple/Pink
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 60%, #090d16 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .title-font {
+            font-family: 'Baloo 2', cursive;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* 3D Animated Spring CSS SVG */
+        .spring-path {
+            stroke-dasharray: 400;
+            stroke-dashoffset: 0;
+            animation: stretchSpring 2.2s infinite ease-in-out;
+            transform-origin: top center;
+        }
+
+        @keyframes stretchSpring {
+            0%, 100% { transform: scaleY(0.75); }
+            50% { transform: scaleY(1.35); }
+        }
+
+        /* Buzzer Button Glow Animation */
+        .buzzer-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .buzzer-btn:hover:not(:disabled) {
+            transform: translateY(-4px) scale(1.02);
+            filter: brightness(1.15);
+        }
+
+        .buzzer-btn:active:not(:disabled) {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .buzzer-active {
+            animation: bellRingPulse 0.8s infinite alternate ease-in-out;
+            box-shadow: 0 0 30px 8px currentColor !important;
+        }
+
+        @keyframes bellRingPulse {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.06) rotate(-4deg); }
+            75% { transform: scale(1.06) rotate(4deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4);
+        }
+
+        #canvas-confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="relative flex flex-col justify-between select-none min-h-screen">
+    <canvas id="canvas-confetti"></canvas>
+
+    <!-- Top Utility Header -->
+    <header class="w-full px-4 md:px-8 py-3 flex justify-between items-center z-20 glass-panel border-b border-slate-700">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 flex items-center justify-center text-slate-950 text-xl font-bold shadow-lg">
+                <i class="fa-solid fa-bell animate-bounce"></i>
+            </div>
+            <span class="title-font text-lg md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400">
+                RUNG CHUÔNG VÀNG - KHTN 6
+            </span>
+        </div>
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <button id="btn-sound" onclick="toggleSound()" class="p-2 md:px-4 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-600 transition flex items-center gap-2 text-xs md:text-sm font-semibold">
+                <i id="sound-icon" class="fa-solid fa-volume-high text-emerald-400"></i>
+                <span id="sound-text" class="hidden md:inline">Âm thanh: BẬT</span>
+            </button>
+            <button onclick="toggleFullscreen()" class="p-2 md:px-4 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-600 transition flex items-center gap-2 text-xs md:text-sm font-semibold">
+                <i class="fa-solid fa-expand text-amber-400"></i>
+                <span class="hidden md:inline">Toàn màn hình</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="flex-grow flex items-center justify-center p-3 md:p-6 z-10">
+
+        <!-- ================= MÀN HÌNH MỞ ĐẦU (START SCREEN) ================= -->
+        <div id="screen-start" class="w-full max-w-4xl glass-panel rounded-3xl p-6 md:p-10 text-center shadow-2xl relative overflow-hidden">
+            <div class="inline-block px-5 py-2 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-sm md:text-base font-bold mb-4">
+                <i class="fa-solid fa-bell mr-2 text-yellow-400"></i> HỘI THI TRUY KHIẾN KIẾN THỨC
+            </div>
+
+            <h1 class="title-font text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 mb-2 drop-shadow-lg tracking-wide uppercase">
+                Rung Chuông Vàng
+            </h1>
+            <p class="text-lg md:text-2xl text-cyan-300 font-semibold mb-6 title-font">
+                Đường đua chinh phục kiến thức: Đặc điểm biến dạng của lò xo
+            </p>
+
+            <!-- 3D Animated Spring Component -->
+            <div class="flex justify-center items-center my-4">
+                <svg width="130" height="130" viewBox="0 0 100 120" class="overflow-visible">
+                    <defs>
+                        <linearGradient id="springGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f59e0b" />
+                            <stop offset="50%" stop-color="#ec4899" />
+                            <stop offset="100%" stop-color="#3b82f6" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M 50 0 L 50 15" stroke="url(#springGrad)" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <path class="spring-path" d="M 50 15 
+                             C 85 15, 85 28, 50 28 
+                             C 15 28, 15 41, 50 41 
+                             C 85 41, 85 54, 50 54 
+                             C 15 54, 15 67, 50 67 
+                             C 85 67, 85 80, 50 80 
+                             C 15 80, 15 93, 50 93 L 50 105" 
+                          stroke="url(#springGrad)" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <rect x="35" y="103" width="30" height="16" rx="4" fill="#fbbf24" stroke="#fff" stroke-width="1.5"/>
+                </svg>
+            </div>
+
+            <!-- 4 Teams Display Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 my-6">
+                <div class="p-4 rounded-2xl bg-blue-600/20 border-2 border-blue-500/50 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg mb-2">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <span class="text-xs font-bold text-blue-300">ĐỘI 1</span>
+                    <h3 class="title-font font-bold text-white text-sm md:text-base">Chiến binh Lò xo</h3>
+                    <span class="text-[10px] text-blue-200 mt-1 bg-blue-900/60 px-2 py-0.5 rounded">Phím 1</span>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-amber-600/20 border-2 border-amber-500/50 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white text-xl shadow-lg mb-2">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <span class="text-xs font-bold text-amber-300">ĐỘI 2</span>
+                    <h3 class="title-font font-bold text-white text-sm md:text-base">Tia chớp</h3>
+                    <span class="text-[10px] text-amber-200 mt-1 bg-amber-900/60 px-2 py-0.5 rounded">Phím 2</span>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-emerald-600/20 border-2 border-emerald-500/50 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xl shadow-lg mb-2">
+                        <i class="fa-solid fa-microscope"></i>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-300">ĐỘI 3</span>
+                    <h3 class="title-font font-bold text-white text-sm md:text-base">Nhà khoa học nhí</h3>
+                    <span class="text-[10px] text-emerald-200 mt-1 bg-emerald-900/60 px-2 py-0.5 rounded">Phím 3</span>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-fuchsia-600/20 border-2 border-fuchsia-500/50 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-fuchsia-600 flex items-center justify-center text-white text-xl shadow-lg mb-2">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <span class="text-xs font-bold text-fuchsia-300">ĐỘI 4</span>
+                    <h3 class="title-font font-bold text-white text-sm md:text-base">Siêu trí tuệ</h3>
+                    <span class="text-[10px] text-fuchsia-200 mt-1 bg-fuchsia-900/60 px-2 py-0.5 rounded">Phím 4</span>
+                </div>
+            </div>
+
+            <!-- Start Game Button -->
+            <button onclick="startGame()" class="title-font px-10 py-4 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-2xl rounded-2xl shadow-xl hover:shadow-amber-500/50 transition duration-300 transform hover:scale-105">
+                <i class="fa-solid fa-bell mr-3"></i> BẮT ĐẦU TRÒ CHƠI
+            </button>
+        </div>
+
+
+        <!-- ================= MÀN HÌNH THI ĐẤU (QUIZ SCREEN) ================= -->
+        <div id="screen-quiz" class="hidden w-full max-w-5xl flex flex-col gap-4">
+
+            <!-- Top Scoreboard for 4 Teams -->
+            <div id="scoreboard" class="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Main Question & Interaction Panel -->
+            <div class="glass-panel rounded-3xl p-4 md:p-7 shadow-2xl relative">
+
+                <!-- Header Info & Timer -->
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-4 pb-3 border-b border-slate-700/80">
+                    <div class="flex items-center gap-3">
+                        <span id="question-index-badge" class="text-slate-200 font-bold bg-slate-800 px-4 py-1.5 rounded-xl border border-slate-700 text-sm md:text-base">
+                            CÂU HỎI: <span id="current-q-num" class="text-amber-400 font-black text-lg">1</span>/10
+                        </span>
+
+                        <!-- Status Indicator Badge -->
+                        <div id="status-badge" class="px-4 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 font-semibold text-xs md:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-hand-pointer text-amber-400"></i>
+                            <span id="status-text">CHỜ BẤM CHUÔNG GIÀNH QUYỀN...</span>
+                        </div>
+                    </div>
+
+                    <!-- Countdown Timer -->
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 bg-slate-900 px-4 py-1.5 rounded-xl border border-slate-700">
+                            <i class="fa-regular fa-clock text-amber-400 text-lg"></i>
+                            <span id="timer-text" class="title-font font-black text-2xl text-amber-400 w-8 text-center">15</span>
+                            <span class="text-xs text-slate-400">s</span>
+                            <button id="btn-pause" onclick="togglePauseTimer()" title="Tạm dừng / Tiếp tục" class="ml-1.5 text-slate-400 hover:text-white transition">
+                                <i id="pause-icon" class="fa-solid fa-pause"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-800 h-2 rounded-full mb-5 overflow-hidden">
+                    <div id="quiz-progress" class="bg-gradient-to-r from-amber-400 to-yellow-500 h-full transition-all duration-300 w-1/10"></div>
+                </div>
+
+                <!-- Question Text -->
+                <div class="mb-5">
+                    <h2 id="question-text" class="text-lg md:text-2xl font-bold leading-relaxed text-slate-100 min-h-[50px]">
+                        Nội dung câu hỏi...
+                    </h2>
+                </div>
+
+                <!-- Answer Options (2x2 Grid) -->
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
+                    <!-- Option buttons dynamically rendered -->
+                </div>
+
+                <!-- Feedback & Physics Explanation Panel -->
+                <div id="explanation-panel" class="hidden p-4 md:p-5 rounded-2xl bg-slate-800/95 border border-slate-700 mb-4 animate-fade-in">
+                    <div id="feedback-header" class="flex items-center gap-3 text-lg font-bold mb-2 title-font">
+                        <!-- Dynamic status text -->
+                    </div>
+                    <div class="text-slate-200 text-sm md:text-base leading-relaxed" id="explanation-text">
+                        <!-- Explanation text -->
+                    </div>
+                </div>
+
+                <!-- Teacher Controls & Next Question Action -->
+                <div class="flex flex-wrap justify-between items-center gap-3 pt-3 border-t border-slate-700/60">
+                    <div class="flex items-center gap-2">
+                        <button id="btn-re-buzz" onclick="resetBuzzersForRebuzz()" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs md:text-sm rounded-xl transition flex items-center gap-2 shadow">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>MỞ CHUÔNG CỚP QUYỀN</span>
+                        </button>
+                    </div>
+
+                    <button id="btn-next" onclick="nextQuestion()" class="hidden title-font px-7 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-black text-base md:text-lg rounded-xl shadow-lg transition transform hover:scale-105 flex items-center gap-2">
+                        <span>CÂU TIẾP THEO</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= BUZZER BUTTONS PANEL (4 TEAMS) ================= -->
+            <div class="glass-panel rounded-3xl p-4 md:p-5 shadow-2xl">
+                <div class="text-center text-xs font-bold uppercase tracking-wider text-amber-300 mb-3 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bell"></i> NÚT CHUÔNG GIÀNH QUYỀN TRẢ LỜI (PHÍM TẮT: 1, 2, 3, 4)
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <!-- Team 1 Buzzer -->
+                    <button id="buzzer-1" onclick="teamBuzz(1)" class="buzzer-btn p-3 md:p-4 rounded-2xl bg-blue-600 hover:bg-blue-500 border-2 border-blue-400 text-white font-bold flex flex-col items-center justify-center gap-1 shadow-lg disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-bell text-2xl md:text-3xl text-yellow-300"></i>
+                        <span class="title-font text-sm md:text-base">ĐỘI 1: CHIẾN BINH LÒ XO</span>
+                        <span class="text-[10px] bg-blue-900/80 px-2 py-0.5 rounded font-mono">[ Phím 1 ]</span>
+                    </button>
+
+                    <!-- Team 2 Buzzer -->
+                    <button id="buzzer-2" onclick="teamBuzz(2)" class="buzzer-btn p-3 md:p-4 rounded-2xl bg-amber-500 hover:bg-amber-400 border-2 border-amber-300 text-white font-bold flex flex-col items-center justify-center gap-1 shadow-lg disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-bell text-2xl md:text-3xl text-yellow-100"></i>
+                        <span class="title-font text-sm md:text-base">ĐỘI 2: TIA CHỚP</span>
+                        <span class="text-[10px] bg-amber-900/80 px-2 py-0.5 rounded font-mono">[ Phím 2 ]</span>
+                    </button>
+
+                    <!-- Team 3 Buzzer -->
+                    <button id="buzzer-3" onclick="teamBuzz(3)" class="buzzer-btn p-3 md:p-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 border-2 border-emerald-400 text-white font-bold flex flex-col items-center justify-center gap-1 shadow-lg disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-bell text-2xl md:text-3xl text-yellow-300"></i>
+                        <span class="title-font text-sm md:text-base">ĐỘI 3: NHÀ KHOA HỌC NHÍ</span>
+                        <span class="text-[10px] bg-emerald-900/80 px-2 py-0.5 rounded font-mono">[ Phím 3 ]</span>
+                    </button>
+
+                    <!-- Team 4 Buzzer -->
+                    <button id="buzzer-4" onclick="teamBuzz(4)" class="buzzer-btn p-3 md:p-4 rounded-2xl bg-fuchsia-600 hover:bg-fuchsia-500 border-2 border-fuchsia-400 text-white font-bold flex flex-col items-center justify-center gap-1 shadow-lg disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-bell text-2xl md:text-3xl text-yellow-300"></i>
+                        <span class="title-font text-sm md:text-base">ĐỘI 4: SIÊU TRÍ TUỆ</span>
+                        <span class="text-[10px] bg-fuchsia-900/80 px-2 py-0.5 rounded font-mono">[ Phím 4 ]</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- ================= MÀN HÌNH TỔNG KẾT (RESULT SCREEN) ================= -->
+        <div id="screen-result" class="hidden w-full max-w-4xl glass-panel rounded-3xl p-6 md:p-10 text-center shadow-2xl relative">
+            <div class="inline-block px-5 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-bold text-sm mb-3">
+                <i class="fa-solid fa-trophy mr-2 text-amber-400"></i> BẢNG VÀNG VINH DẠNH
+            </div>
+
+            <h1 class="title-font text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 mb-2">
+                TỔNG KẾT RUNG CHUÔNG VÀNG
+            </h1>
+            <p class="text-slate-300 text-sm md:text-base mb-6">
+                Chúc mừng các đội đã hoàn thành xuất sắc đường đua chinh phục kiến thức!
+            </p>
+
+            <!-- Winner Banner -->
+            <div id="winner-banner" class="mb-6 p-6 rounded-2xl bg-gradient-to-r from-amber-500/30 via-yellow-500/20 to-amber-500/30 border-2 border-amber-400/70 shadow-2xl flex flex-col items-center">
+                <div class="text-5xl mb-2 text-amber-400 animate-bounce">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <h2 class="text-xs uppercase tracking-widest text-amber-300 font-extrabold mb-1">NHÀ VÔ ĐỊCH RUNG CHUÔNG VÀNG</h2>
+                <div id="winner-team-name" class="title-font text-3xl md:text-4xl font-black text-white">
+                    ĐỘI X
+                </div>
+            </div>
+
+            <!-- Leaderboard List -->
+            <div id="leaderboard-list" class="space-y-3 max-w-2xl mx-auto mb-8">
+                <!-- Dynamically injected ranking items -->
+            </div>
+
+            <button onclick="restartGame()" class="title-font px-10 py-4 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-black text-xl rounded-2xl shadow-xl transition transform hover:scale-105">
+                <i class="fa-solid fa-rotate-right mr-2"></i> CHƠI LẠI TỪ ĐẦU
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer Credit -->
+    <footer class="w-full text-center py-2.5 text-xs text-slate-400 glass-panel border-t border-slate-800 z-20">
+        Môn Khoa học tự nhiên 6 • Chủ đề: Đặc điểm biến dạng của lò xo
+    </footer>
+
+    <!-- Game Engine Logic & Audio Synthesizer -->
+    <script>
+        // -------------------------------------------------------------
+        // 1. DATA STRUCTURES & QUESTION BANK (10 PHYSICAL QUESTIONS)
+        // -------------------------------------------------------------
+        const TEAMS = [
+            { id: 1, name: "Chiến binh Lò xo", icon: "fa-shield-halved", color: "#2563eb", bgClass: "bg-blue-600", borderClass: "border-blue-500", textClass: "text-blue-400", score: 0 },
+            { id: 2, name: "Tia chớp", icon: "fa-bolt", color: "#eab308", bgClass: "bg-amber-500", borderClass: "border-amber-500", textClass: "text-amber-400", score: 0 },
+            { id: 3, name: "Nhà khoa học nhí", icon: "fa-microscope", color: "#16a34a", bgClass: "bg-emerald-600", borderClass: "border-emerald-500", textClass: "text-emerald-400", score: 0 },
+            { id: 4, name: "Siêu trí tuệ", icon: "fa-brain", color: "#d946ef", bgClass: "bg-fuchsia-600", borderClass: "border-fuchsia-500", textClass: "text-fuchsia-400", score: 0 }
+        ];
+
+        const QUESTIONS = [
+            {
+                question: "Câu 1: Một lò xo giãn 0,5 cm dưới tải trọng 100g. Cần khối lượng bao nhiêu để tạo ra độ giãn 1,5 cm?",
+                options: [
+                    "A. Khối lượng cần thiết chính xác là 450 gram.",
+                    "B. Khối lượng cần thiết chính xác là 300 gram.",
+                    "C. Khối lượng cần thiết chính xác là 200 gram.",
+                    "D. Khối lượng cần thiết chính xác là 150 gram."
+                ],
+                correct: 1, // B
+                explanation: "Độ giãn của lò xo tỉ lệ thuận với khối lượng vật treo. Độ giãn tăng 3 lần (0,5 cm -> 1,5 cm) thì khối lượng cũng tăng 3 lần (100g x 3 = 300g)."
+            },
+            {
+                question: "Câu 2: Trường hợp nào sau đây thể hiện biến dạng không đàn hồi (biến dạng dẻo)?",
+                options: [
+                    "A. Một sợi dây thun bị kéo căng để giữ giấy tờ.",
+                    "B. Một thanh nhôm bị uốn cong vĩnh viễn.",
+                    "C. Một lò xo kim loại bị nén bên trong bút bi.",
+                    "D. Một quả bóng cao su bị biến dạng tạm thời khi đập vào tường."
+                ],
+                correct: 1, // B
+                explanation: "Biến dạng dẻo (không đàn hồi) là biến dạng làm vật thể không thể trở lại hình dạng ban đầu sau khi lực tác dụng ngừng lại. Thanh nhôm uốn cong vĩnh viễn chính là biến dạng dẻo."
+            },
+            {
+                question: "Câu 3: Khi thiết kế cân lò xo, tại sao việc giữ trong giới hạn đàn hồi lại quan trọng?",
+                options: [
+                    "A. Để ngăn lò xo bị gỉ sét sau thời gian dài sử dụng.",
+                    "B. Để duy trì mối quan hệ lực-độ giãn tuyến tính, có thể đảo ngược.",
+                    "C. Để đảm bảo cân vẫn nhỏ gọn và dễ mang theo.",
+                    "D. Để giữ cho lò xo không bị quá nóng khi chạm vào."
+                ],
+                correct: 1, // B
+                explanation: "Chỉ khi nằm trong giới hạn đàn hồi, độ giãn của lò xo mới tỉ lệ thuận với lực tác dụng, giúp kết quả đo của cân chính xác và lò xo trở lại vị trí ban đầu."
+            },
+            {
+                question: "Câu 4: Nếu hằng số lò xo được định nghĩa là k = F/Δx, lò xo cứng hơn so sánh với lò xo mềm hơn như thế nào?",
+                options: [
+                    "A. Nó cần ít lực hơn cho cùng một độ giãn.",
+                    "B. Nó cần nhiều lực hơn cho cùng một độ giãn.",
+                    "C. Nó không thể trải qua bất kỳ biến dạng đàn hồi nào.",
+                    "D. Nó có cùng một lực cho bất kỳ độ giãn nào."
+                ],
+                correct: 1, // B
+                explanation: "Hằng số k (độ cứng) càng lớn thì lực F cần thiết để làm lò xo giãn một khoảng Δx càng lớn (F = k * Δx)."
+            },
+            {
+                question: "Câu 5: Nếu khối lượng 100g làm cân lò xo chỉ vạch thứ 2, tổng khối lượng cần thiết để đạt vạch thứ 5 là bao nhiêu?",
+                options: [
+                    "A. Cần tổng khối lượng chính xác là 300 gram.",
+                    "B. Cần tổng khối lượng chính xác là 200 gram.",
+                    "C. Cần tổng khối lượng chính xác là 250 gram.",
+                    "D. Cần tổng khối lượng chính xác là 500 gram."
+                ],
+                correct: 2, // C
+                explanation: "Mỗi vạch tương ứng với khối lượng 100g / 2 = 50g. Để đạt vạch thứ 5, tổng khối lượng cần có là 5 x 50g = 250g."
+            },
+            {
+                question: "Câu 6: Nguyên lý vật lý nào giải thích rõ nhất hoạt động của cân lò xo?",
+                options: [
+                    "A. Nguyên lý Archimedes về lực đẩy trong chất lưu.",
+                    "B. Định luật Hooke về biến dạng đàn hồi tuyến tính.",
+                    "C. Định luật Pascal về áp suất trong chất lưu.",
+                    "D. Định luật thứ nhất của Newton về quán tính."
+                ],
+                correct: 1, // B
+                explanation: "Định luật Hooke khẳng định trong giới hạn đàn hồi, độ giãn của lò xo tỉ lệ thuận với lực kéo tác dụng."
+            },
+            {
+                question: "Câu 7: Một lò xo giãn 0,5 cm khi gắn vật nặng 50g. Cần bao nhiêu vật nặng 50g để đạt tổng độ giãn 1,5 cm?",
+                options: [
+                    "A. Cần chính xác năm vật nặng cho độ giãn này.",
+                    "B. Cần chính xác hai vật nặng cho độ giãn này.",
+                    "C. Cần chính xác bốn vật nặng cho độ giãn này.",
+                    "D. Cần chính xác ba vật nặng cho độ giãn này."
+                ],
+                correct: 3, // D
+                explanation: "Để độ giãn tăng từ 0,5 cm lên 1,5 cm (gấp 3 lần), cần số lượng vật nặng 50g gấp 3 lần, tức là 3 vật nặng 50g."
+            },
+            {
+                question: "Câu 8: Điều gì xảy ra với lò xo nếu lực tác dụng vượt quá giới hạn đàn hồi của nó?",
+                options: [
+                    "A. Nó sẽ trở nên mạnh hơn và cứng hơn trước.",
+                    "B. Nó sẽ trở lại chiều dài ban đầu ngay lập tức.",
+                    "C. Nó sẽ rung ở tần số cao hơn bình thường.",
+                    "D. Nó sẽ chịu biến dạng vĩnh viễn, không đàn hồi."
+                ],
+                correct: 3, // D
+                explanation: "Khi lực tác dụng vượt quá giới hạn đàn hồi, lò xo bị biến dạng vĩnh viễn (biến dạng dẻo) và không thể co lại về chiều dài ban đầu."
+            },
+            {
+                question: "Câu 9: Nếu lò xo có chiều dài tự nhiên L0 và giãn đến 12 cm khi gắn 4 vật nặng, và 1 vật nặng gây ra độ giãn 0,5 cm, thì L0 là bao nhiêu?",
+                options: [
+                    "A. Chiều dài tự nhiên của lò xo là 9,0 cm.",
+                    "B. Chiều dài tự nhiên của lò xo là 10,0 cm.",
+                    "C. Chiều dài tự nhiên của lò xo là 11,0 cm.",
+                    "D. Chiều dài tự nhiên của lò xo là 8,0 cm."
+                ],
+                correct: 1, // B
+                explanation: "Tổng độ giãn của 4 vật nặng là 4 x 0,5 cm = 2,0 cm. Chiều dài tự nhiên ban đầu L0 = 12 cm - 2 cm = 10,0 cm."
+            },
+            {
+                question: "Câu 10: Trong thiết bị cân dựa trên lò xo, chức năng chính của lò xo là gì?",
+                options: [
+                    "A. Để loại bỏ ảnh hưởng của trọng lực lên vật thể.",
+                    "B. Để giảm tổng trọng lượng của vật được đo.",
+                    "C. Để lưu trữ năng lượng tiềm năng cho mục đích cơ học sau này.",
+                    "D. Để chuyển đổi lực tác dụng thành chiều dài có thể đo lường được."
+                ],
+                correct: 3, // D
+                explanation: "Lò xo chuyển đổi lực kéo (trọng lượng) thành biến dạng độ dài, từ đó hiển thị vị trí trên vạch chia độ để người dùng đọc giá trị."
+            }
+        ];
+
+        // -------------------------------------------------------------
+        // 2. STATE MANAGEMENT & WEB AUDIO SYNTHESIZER
+        // -------------------------------------------------------------
+        let currentQuestionIndex = 0;
+        let activeBuzzerTeamId = null; // Team currently answering
+        let disqualifiedTeamsThisQ = []; // Teams that answered wrong in current Q
+        let timerInterval = null;
+        let timeLeft = 15;
+        let isPaused = false;
+        let isSoundOn = true;
+        let optionSelected = false;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!isSoundOn) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'bell') {
+                // Golden Bell Ring Synth
+                const freqs = [880, 1760, 2640];
+                freqs.forEach((f, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, now);
+                    gain.gain.setValueAtTime(0.25 / (i + 1), now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 1.2);
+                });
+            } else if (type === 'tick') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(700, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'correct') {
+                const freqs = [523.25, 659.25, 783.99, 1046.50];
+                freqs.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.35);
+                });
+            } else if (type === 'wrong') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(160, now);
+                osc.frequency.exponentialRampToValueAtTime(70, now + 0.35);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'victory') {
+                const notes = [{ f: 523.25, d: 0.15 }, { f: 659.25, d: 0.15 }, { f: 783.99, d: 0.15 }, { f: 1046.50, d: 0.5 }];
+                let time = now;
+                notes.forEach(note => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(note.f, time);
+                    gain.gain.setValueAtTime(0.18, time);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + note.d);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(time);
+                    osc.stop(time + note.d);
+                    time += note.d + 0.05;
+                });
+            }
+        }
+
+        function toggleSound() {
+            isSoundOn = !isSoundOn;
+            document.getElementById('sound-icon').className = isSoundOn ? "fa-solid fa-volume-high text-emerald-400" : "fa-solid fa-volume-xmark text-rose-400";
+            document.getElementById('sound-text').textContent = isSoundOn ? "Âm thanh: BẬT" : "Âm thanh: TẮT";
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 3. KEYBOARD SHORTCUTS FOR TEACHER (1, 2, 3, 4)
+        // -------------------------------------------------------------
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('screen-quiz').classList.contains('hidden')) return;
+            if (['1', '2', '3', '4'].includes(e.key)) {
+                const teamId = parseInt(e.key);
+                if (!disqualifiedTeamsThisQ.includes(teamId) && activeBuzzerTeamId === null && !optionSelected) {
+                    teamBuzz(teamId);
+                }
+            }
+        });
+
+        // -------------------------------------------------------------
+        // 4. GAME ENGINE & BUZZER SYSTEM
+        // -------------------------------------------------------------
+        function startGame() {
+            TEAMS.forEach(t => t.score = 0);
+            currentQuestionIndex = 0;
+            
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            
+            renderScoreboard();
+            loadQuestion();
+        }
+
+        function renderScoreboard() {
+            const container = document.getElementById('scoreboard');
+            container.innerHTML = '';
+
+            TEAMS.forEach(team => {
+                const isBuzzed = activeBuzzerTeamId === team.id;
+                const isDisqualified = disqualifiedTeamsThisQ.includes(team.id);
+
+                const card = document.createElement('div');
+                card.className = `p-2.5 md:p-3 rounded-2xl glass-card transition-all duration-300 flex items-center justify-between border-2 ${
+                    isBuzzed ? `${team.borderClass} active-team-glow bg-slate-800/90 ring-4 ring-amber-400` :
+                    isDisqualified ? 'border-slate-800 opacity-40 grayscale' : 'border-slate-700/60'
+                }`;
+                card.style.color = team.color;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <div class="w-8 h-8 md:w-9 md:h-9 rounded-full ${team.bgClass} text-white flex items-center justify-center shrink-0 shadow-md">
+                            <i class="fa-solid ${team.icon} text-xs md:text-sm"></i>
+                        </div>
+                        <div class="truncate">
+                            <p class="text-[10px] font-bold uppercase opacity-80">Đội ${team.id}</p>
+                            <h4 class="title-font text-xs md:text-sm font-extrabold text-white truncate">${team.name}</h4>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="title-font font-black text-lg md:text-xl text-amber-400">${team.score}</span>
+                        <span class="text-[9px] text-slate-400 block font-semibold">ĐIỂM</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function loadQuestion() {
+            activeBuzzerTeamId = null;
+            disqualifiedTeamsThisQ = [];
+            optionSelected = false;
+            isPaused = false;
+            document.getElementById('pause-icon').className = "fa-solid fa-pause";
+
+            const q = QUESTIONS[currentQuestionIndex];
+
+            // Update Progress & Question Header
+            document.getElementById('current-q-num').textContent = currentQuestionIndex + 1;
+            document.getElementById('quiz-progress').style.width = `${((currentQuestionIndex + 1) / QUESTIONS.length) * 100}%`;
+            document.getElementById('question-text').textContent = q.question;
+
+            // Reset Status Badge
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.className = "px-4 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 font-semibold text-xs md:text-sm flex items-center gap-2";
+            document.getElementById('status-text').textContent = "CHỜ BẤM CHUÔNG GIÀNH QUYỀN...";
+
+            // Render Options (Disabled until buzzed)
+            renderOptionButtons(q, false);
+
+            // Reset Feedback & Action Buttons
+            document.getElementById('explanation-panel').classList.add('hidden');
+            document.getElementById('btn-next').classList.add('hidden');
+            document.getElementById('btn-re-buzz').classList.add('hidden');
+
+            // Reset Timer & Buzzers UI
+            resetTimer(15, false);
+            updateBuzzerButtonsUI();
+            renderScoreboard();
+        }
+
+        function renderOptionButtons(q, enabled) {
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full p-3.5 md:p-4 rounded-2xl glass-card border border-slate-700 text-left font-medium text-sm md:text-base text-slate-100 flex items-start gap-3 bg-slate-800/60 ${
+                    enabled ? 'cursor-pointer hover:border-amber-400' : 'cursor-not-allowed opacity-60'
+                }`;
+                btn.disabled = !enabled;
+                btn.onclick = () => selectOption(idx);
+                btn.innerHTML = `
+                    <span class="w-7 h-7 rounded-lg bg-slate-700 text-amber-400 font-bold flex items-center justify-center shrink-0 border border-slate-600 text-sm">
+                        ${String.fromCharCode(65 + idx)}
+                    </span>
+                    <span class="mt-0.5">${optText.substring(3)}</span>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function updateBuzzerButtonsUI() {
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`buzzer-${i}`);
+                const isDisqualified = disqualifiedTeamsThisQ.includes(i);
+                
+                if (activeBuzzerTeamId === i) {
+                    btn.disabled = true;
+                    btn.classList.add('buzzer-active');
+                } else if (activeBuzzerTeamId !== null || isDisqualified || optionSelected) {
+                    btn.disabled = true;
+                    btn.classList.remove('buzzer-active');
+                } else {
+                    btn.disabled = false;
+                    btn.classList.remove('buzzer-active');
+                }
+            }
+        }
+
+        function teamBuzz(teamId) {
+            if (activeBuzzerTeamId !== null || disqualifiedTeamsThisQ.includes(teamId) || optionSelected) return;
+
+            activeBuzzerTeamId = teamId;
+            const team = TEAMS.find(t => t.id === teamId);
+
+            playSound('bell');
+
+            // Update Status Badge with Team Colors
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.className = `px-4 py-1.5 rounded-xl ${team.bgClass} text-white font-extrabold text-xs md:text-sm flex items-center gap-2 shadow-lg animate-pulse`;
+            document.getElementById('status-text').textContent = `ĐỘI GIÀNH QUYỀN: ${team.name.toUpperCase()}`;
+
+            // Enable option selection & start timer countdown
+            renderOptionButtons(QUESTIONS[currentQuestionIndex], true);
+            updateBuzzerButtonsUI();
+            renderScoreboard();
+
+            resetTimer(15, true);
+        }
+
+        function resetTimer(seconds, startNow) {
+            clearInterval(timerInterval);
+            timeLeft = seconds;
+            updateTimerDisplay();
+
+            if (startNow) {
+                timerInterval = setInterval(() => {
+                    if (!isPaused && !optionSelected) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                        if (timeLeft <= 3 && timeLeft > 0) playSound('tick');
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            handleTimeout();
+                        }
+                    }
+                }, 1000);
+            }
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer-text');
+            timerEl.textContent = timeLeft;
+            if (timeLeft <= 5 && timeLeft > 0) {
+                timerEl.className = "title-font font-black text-2xl text-rose-500 animate-pulse w-8 text-center";
+            } else {
+                timerEl.className = "title-font font-black text-2xl text-amber-400 w-8 text-center";
+            }
+        }
+
+        function togglePauseTimer() {
+            if (optionSelected || activeBuzzerTeamId === null) return;
+            isPaused = !isPaused;
+            document.getElementById('pause-icon').className = isPaused ? "fa-solid fa-play" : "fa-solid fa-pause";
+        }
+
+        function disableOptionButtons() {
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach(b => b.disabled = true);
+        }
+
+        function selectOption(selectedIndex) {
+            if (optionSelected || activeBuzzerTeamId === null) return;
+            optionSelected = true;
+            clearInterval(timerInterval);
+
+            const q = QUESTIONS[currentQuestionIndex];
+            const currentTeam = TEAMS.find(t => t.id === activeBuzzerTeamId);
+            const btns = document.querySelectorAll('.option-btn');
+            disableOptionButtons();
+
+            const isCorrect = selectedIndex === q.correct;
+
+            if (isCorrect) {
+                currentTeam.score += 10;
+                playSound('correct');
+                triggerConfetti();
+
+                btns[selectedIndex].classList.remove('bg-slate-800/60', 'border-slate-700');
+                btns[selectedIndex].classList.add('bg-emerald-600/40', 'border-emerald-400', 'text-emerald-200', 'ring-2', 'ring-emerald-400');
+
+                showFeedback(true, `CHÍNH XÁC! ĐỘI ${currentTeam.name.toUpperCase()} ĐƯỢC CỘNG 10 ĐIỂM!`, q.explanation);
+                document.getElementById('btn-next').classList.remove('hidden');
+            } else {
+                playSound('wrong');
+                disqualifiedTeamsThisQ.push(activeBuzzerTeamId);
+
+                btns[selectedIndex].classList.remove('bg-slate-800/60', 'border-slate-700');
+                btns[selectedIndex].classList.add('bg-rose-600/40', 'border-rose-500', 'text-rose-200');
+
+                showFeedback(false, `RẤT TIẾC! ĐỘI ${currentTeam.name.toUpperCase()} TRẢ LỜI SAI.`, "Các đội còn lại có thể bấm chuông cướp quyền trả lời!");
+
+                activeBuzzerTeamId = null;
+
+                // Check if all teams are disqualified
+                if (disqualifiedTeamsThisQ.length >= 4) {
+                    revealCorrectAnswer();
+                } else {
+                    document.getElementById('btn-re-buzz').classList.remove('hidden');
+                }
+            }
+
+            updateBuzzerButtonsUI();
+            renderScoreboard();
+        }
+
+        function handleTimeout() {
+            if (optionSelected || activeBuzzerTeamId === null) return;
+            playSound('wrong');
+
+            const currentTeam = TEAMS.find(t => t.id === activeBuzzerTeamId);
+            disqualifiedTeamsThisQ.push(activeBuzzerTeamId);
+
+            showFeedback(false, `HẾT GIỜ! ĐỘI ${currentTeam.name.toUpperCase()} MẤT LƯỢT.`, "Các đội còn lại có thể bấm chuông cướp quyền trả lời!");
+
+            disableOptionButtons();
+            activeBuzzerTeamId = null;
+
+            if (disqualifiedTeamsThisQ.length >= 4) {
+                revealCorrectAnswer();
+            } else {
+                document.getElementById('btn-re-buzz').classList.remove('hidden');
+            }
+
+            updateBuzzerButtonsUI();
+            renderScoreboard();
+        }
+
+        function resetBuzzersForRebuzz() {
+            optionSelected = false;
+            document.getElementById('btn-re-buzz').classList.add('hidden');
+            document.getElementById('explanation-panel').classList.add('hidden');
+
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.className = "px-4 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs md:text-sm flex items-center gap-2 animate-pulse";
+            document.getElementById('status-text').textContent = "MỜI CÁC ĐỘI CÒN LẠI BẤM CHUÔNG CỚP QUYỀN!";
+
+            updateBuzzerButtonsUI();
+            resetTimer(15, false);
+        }
+
+        function revealCorrectAnswer() {
+            optionSelected = true;
+            const q = QUESTIONS[currentQuestionIndex];
+            const btns = document.querySelectorAll('.option-btn');
+
+            btns[q.correct].classList.remove('bg-slate-800/60', 'border-slate-700');
+            btns[q.correct].classList.add('bg-emerald-600/40', 'border-emerald-400', 'text-emerald-200', 'animate-pulse');
+
+            showFeedback(false, "TẤT CẢ CÁC ĐỘI ĐÃ MẤT LƯỢT!", q.explanation);
+            document.getElementById('btn-re-buzz').classList.add('hidden');
+            document.getElementById('btn-next').classList.remove('hidden');
+        }
+
+        function showFeedback(isCorrect, title, explanation) {
+            const panel = document.getElementById('explanation-panel');
+            const header = document.getElementById('feedback-header');
+            const text = document.getElementById('explanation-text');
+
+            panel.classList.remove('hidden');
+
+            if (isCorrect) {
+                header.className = "flex items-center gap-2 text-lg font-extrabold text-emerald-400 mb-1 title-font";
+                header.innerHTML = `<i class="fa-solid fa-circle-check text-xl"></i> ${title}`;
+            } else {
+                header.className = "flex items-center gap-2 text-lg font-extrabold text-rose-400 mb-1 title-font";
+                header.innerHTML = `<i class="fa-solid fa-circle-xmark text-xl"></i> ${title}`;
+            }
+
+            text.innerHTML = `<span class="font-bold text-amber-300">Giải thích:</span> ${explanation}`;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < QUESTIONS.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 5. RESULT & LEADERBOARD SYSTEM
+        // -------------------------------------------------------------
+        function showResults() {
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            playSound('victory');
+            startContinuousConfetti();
+
+            const sortedTeams = [...TEAMS].sort((a, b) => b.score - a.score);
+            const winner = sortedTeams[0];
+
+            document.getElementById('winner-team-name').textContent = winner.name.toUpperCase();
+            document.getElementById('winner-team-name').style.color = winner.color;
+
+            const container = document.getElementById('leaderboard-list');
+            container.innerHTML = '';
+
+            const rankMedals = ['fa-trophy text-yellow-400', 'fa-medal text-slate-300', 'fa-medal text-amber-600', 'fa-award text-fuchsia-400'];
+
+            sortedTeams.forEach((team, idx) => {
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-2xl glass-card flex items-center justify-between border ${
+                    idx === 0 ? 'border-yellow-400/80 bg-yellow-500/15 ring-2 ring-yellow-400/50' : 'border-slate-700'
+                }`;
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl w-8 text-center">
+                            <i class="fa-solid ${rankMedals[idx] || 'fa-award'}"></i>
+                        </span>
+                        <div class="w-10 h-10 rounded-full ${team.bgClass} text-white flex items-center justify-center font-bold">
+                            <i class="fa-solid ${team.icon}"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="title-font font-bold text-lg text-white">${team.name}</h3>
+                            <span class="text-xs text-slate-400">Hạng ${idx + 1}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="title-font font-black text-2xl text-amber-400">${team.score}</span>
+                        <span class="text-xs text-slate-400 ml-1">ĐIỂM</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function restartGame() {
+            stopContinuousConfetti();
+            startGame();
+        }
+
+        // -------------------------------------------------------------
+        // 6. CANVAS CONFETTI SYSTEM
+        // -------------------------------------------------------------
+        const canvas = document.getElementById('canvas-confetti');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let confettiAnimationId = null;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, isContinuous = false) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 8 + 4;
+                this.color = ['#2563eb', '#eab308', '#16a34a', '#d946ef', '#f59e0b'][Math.floor(Math.random() * 5)];
+                this.vx = (Math.random() - 0.5) * 12;
+                this.vy = (Math.random() - 0.5) * 12 - 4;
+                this.gravity = 0.15;
+                this.opacity = 1;
+                this.isContinuous = isContinuous;
+            }
+
+            update() {
+                this.vx *= 0.98;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                if (!this.isContinuous) {
+                    this.opacity -= 0.015;
+                } else if (this.y > canvas.height) {
+                    this.y = -10;
+                    this.x = Math.random() * canvas.width;
+                    this.vy = Math.random() * 3 + 2;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.opacity);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        function triggerConfetti() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 3;
+            for (let i = 0; i < 70; i++) {
+                particles.push(new Particle(centerX, centerY));
+            }
+            if (!confettiAnimationId) animateConfetti();
+        }
+
+        function startContinuousConfetti() {
+            particles = [];
+            for (let i = 0; i < 110; i++) {
+                particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height, true));
+            }
+            if (!confettiAnimationId) animateConfetti();
+        }
+
+        function stopContinuousConfetti() {
+            particles = [];
+            if (confettiAnimationId) {
+                cancelAnimationFrame(confettiAnimationId);
+                confettiAnimationId = null;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, idx) => {
+                p.update();
+                p.draw();
+                if (p.opacity <= 0) particles.splice(idx, 1);
+            });
+
+            if (particles.length > 0) {
+                confettiAnimationId = requestAnimationFrame(animateConfetti);
+            } else {
+                confettiAnimationId = null;
+            }
+        }
+    </script>
+</body>
+</html>
